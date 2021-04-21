@@ -24,8 +24,20 @@ import java.time.LocalDateTime;
 public class MessageData {
     @TableId
     private String msgId;
+    // 消息的发送时间
     private LocalDateTime startTime;
+    // 消息被消费时时间
     private LocalDateTime endTime;
+    // 消息的状态
     private MsgStatus msgStatus;
-    private int msgTimes = 1;
+    // 消息发送成功时在分区中的offset
+    private Long offset;
+    // 消息发送成功时所在的分区
+    private Integer partition;
+    // 消息发送成功时所发送的主题
+    private String topic;
+    // 发送失败时的异常信息
+    private String exceptionMsg;
+    // 消息的发送次数
+    private int msgTimes;
 }

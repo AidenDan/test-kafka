@@ -9,6 +9,7 @@ package com.aiden.producer.model;
 public enum MsgStatus {
     NONE,
     FAIL,
+    SENT,
     SUCCESS;
 
     private MsgStatus(){}

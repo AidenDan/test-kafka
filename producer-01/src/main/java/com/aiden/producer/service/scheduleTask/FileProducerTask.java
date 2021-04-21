@@ -1,5 +1,6 @@
 package com.aiden.producer.service.scheduleTask;
 
+import com.aiden.UUIDGenerator;
 import com.aiden.configuration.StringMessageProducer;
 import com.aiden.producer.model.MessageData;
 import com.aiden.producer.model.MsgStatus;
@@ -39,47 +40,56 @@ public class FileProducerTask {
     @Value("${spring.kafka.topic}")
     private String topic;
 
-    // 每10秒执行一次该方法
+    // 每10秒执行一次该方法 生产消息
     @Scheduled(cron = "0/10 * * * * ?")
     public void scheduleMessage() {
-        MessageData msgData = MessageData.builder()
-                .msgId(UUID.randomUUID().toString())
+        MessageData messageData = MessageData.builder()
+                .msgId(UUIDGenerator.generator())
                 .startTime(LocalDateTime.now())
                 .msgStatus(MsgStatus.NONE)
-                .msgTimes(1)
                 .build();
-        String msgDataString = JSON.toJSONString(msgData);
+
         // 发送消息前 将消息做持久化存储
-        messageService.save(msgData);
-        sendMsg(msgDataString);
+        messageService.save(messageData);
+        sendMsg(messageData);
     }
 
-    private void sendMsg(String msgDataString) {
-        ListenableFuture<SendResult<String, String>> future = stringMessageProducer.send(topic, msgDataString);
+    private void sendMsg(MessageData messageData) {
+        String msgDataString = JSON.toJSONString(messageData);
+        stringMessageProducer
+                .send(topic, msgDataString)
+                .addCallback((stringStringSendResult) -> {
+                    log.info("msgDataString:::{}", msgDataString);
+                    // 如果这条消息发送成功，那么更新数据库中该条消息的状态为success
+                    RecordMetadata recordMetadata = stringStringSendResult.getRecordMetadata();
+                    boolean hasOffset = recordMetadata.hasOffset();
+                    boolean hasTimestamp = recordMetadata.hasTimestamp();
+                    long offset = recordMetadata.offset();
+                    int partition = recordMetadata.partition();
+                    long timestamp = recordMetadata.timestamp();
+                    String topic = recordMetadata.topic();
 
-        future.addCallback((stringStringSendResult) -> {
-            log.info("msgDataString:::{}", msgDataString);
-            // 如果这条消息发送成功，那么更新数据库中该条消息的状态为success
-            RecordMetadata recordMetadata = stringStringSendResult.getRecordMetadata();
-            boolean hasOffset = recordMetadata.hasOffset();
-            boolean hasTimestamp = recordMetadata.hasTimestamp();
-            long offset = recordMetadata.offset();
-            int partition = recordMetadata.partition();
-            long timestamp = recordMetadata.timestamp();
-            String topic = recordMetadata.topic();
+                    map.put("hasOffset", hasOffset);
+                    map.put("hasTimestamp", hasTimestamp);
+                    map.put("offset", offset);
+                    map.put("partition", partition);
+                    map.put("timestamp", timestamp);
+                    map.put("topic", topic);
+                    log.info("map:::{}", map);
 
-            map.put("hasOffset", hasOffset);
-            map.put("hasTimestamp", hasTimestamp);
-            map.put("offset", offset);
-            map.put("partition", partition);
-            map.put("timestamp", timestamp);
-            map.put("topic", topic);
-            log.info("map:::{}", map);
-        }, (throwable) -> {
-            // 如果这条消息发送失败, 那么更新数据库中该条消息状态为fail
-            MessageData messageData = JSON.parseObject(msgDataString, MessageData.class);
-            messageData.setMsgStatus(MsgStatus.FAIL);
-            messageService.updateById(messageData);
-        });
+                    messageData.setMsgStatus(MsgStatus.SENT);
+                    messageData.setTopic(topic);
+                    messageData.setPartition(partition);
+                    messageData.setOffset(offset);
+                }, (throwable) -> {
+                    // 如果这条消息发送失败, 那么更新数据库中该条消息状态为fail
+                    messageData.setMsgStatus(MsgStatus.FAIL);
+                    messageData.setExceptionMsg(throwable.getMessage());
+                });
+
+        // 更新发送消息的次数
+        int msgTimes = messageService.getById(messageData.getMsgId()).getMsgTimes();
+        messageData.setMsgTimes(msgTimes);
+        messageService.updateById(messageData);
     }
 }
