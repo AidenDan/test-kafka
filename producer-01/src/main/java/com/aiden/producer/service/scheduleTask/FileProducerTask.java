@@ -1,6 +1,6 @@
 package com.aiden.producer.service.scheduleTask;
 
-import com.aiden.producer.configuration.StringMessageProducer;
+import com.aiden.configuration.StringMessageProducer;
 import com.aiden.producer.model.MessageData;
 import com.aiden.producer.model.MsgStatus;
 import com.aiden.producer.service.MessageService;
