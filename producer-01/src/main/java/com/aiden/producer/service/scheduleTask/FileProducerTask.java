@@ -57,35 +57,29 @@ public class FileProducerTask {
     private void sendMsg(String msgDataString) {
         ListenableFuture<SendResult<String, String>> future = stringMessageProducer.send(topic, msgDataString);
 
-        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-            @Override
-            public void onFailure(Throwable throwable) {
-                // 如果这条消息发送失败, 那么更新数据库中该条消息状态为fail
-                MessageData messageData = JSON.parseObject(msgDataString, MessageData.class);
-                messageData.setMsgStatus(MsgStatus.FAIL);
-                messageService.updateById(messageData);
-            }
+        future.addCallback((stringStringSendResult) -> {
+            log.info("msgDataString:::{}", msgDataString);
+            // 如果这条消息发送成功，那么更新数据库中该条消息的状态为success
+            RecordMetadata recordMetadata = stringStringSendResult.getRecordMetadata();
+            boolean hasOffset = recordMetadata.hasOffset();
+            boolean hasTimestamp = recordMetadata.hasTimestamp();
+            long offset = recordMetadata.offset();
+            int partition = recordMetadata.partition();
+            long timestamp = recordMetadata.timestamp();
+            String topic = recordMetadata.topic();
 
-            @Override
-            public void onSuccess(SendResult<String, String> stringStringSendResult) {
-                log.info("msgDataString:::{}", msgDataString);
-                // 如果这条消息发送成功，那么更新数据库中该条消息的状态为success
-                RecordMetadata recordMetadata = stringStringSendResult.getRecordMetadata();
-                boolean hasOffset = recordMetadata.hasOffset();
-                boolean hasTimestamp = recordMetadata.hasTimestamp();
-                long offset = recordMetadata.offset();
-                int partition = recordMetadata.partition();
-                long timestamp = recordMetadata.timestamp();
-                String topic = recordMetadata.topic();
-
-                map.put("hasOffset", hasOffset);
-                map.put("hasTimestamp", hasTimestamp);
-                map.put("offset", offset);
-                map.put("partition", partition);
-                map.put("timestamp", timestamp);
-                map.put("topic", topic);
-                log.info("map:::{}", map);
-            }
+            map.put("hasOffset", hasOffset);
+            map.put("hasTimestamp", hasTimestamp);
+            map.put("offset", offset);
+            map.put("partition", partition);
+            map.put("timestamp", timestamp);
+            map.put("topic", topic);
+            log.info("map:::{}", map);
+        }, (throwable) -> {
+            // 如果这条消息发送失败, 那么更新数据库中该条消息状态为fail
+            MessageData messageData = JSON.parseObject(msgDataString, MessageData.class);
+            messageData.setMsgStatus(MsgStatus.FAIL);
+            messageService.updateById(messageData);
         });
     }
 }

@@ -48,7 +48,7 @@ public class KafkaProducerConsumerConfig {
         return containerFactory;
     }
 
-    // 消息消费者配置
+    // 消息批量消费者配置
     @Bean("batchKafkaListenerContainerFactory")
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> batchKafkaListenerContainerFactory(){
         ConcurrentKafkaListenerContainerFactory<String, String> containerFactory = new ConcurrentKafkaListenerContainerFactory<>();
