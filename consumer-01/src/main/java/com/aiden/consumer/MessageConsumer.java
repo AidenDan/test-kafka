@@ -43,11 +43,12 @@ public class MessageConsumer {
     }
 
     // 60s内必须轮询一次消息, 否则kafka会认为此消费者宕机, 将其分区分给其他消费者
+    // 一批消息处理完后, 才回去
     @KafkaListener(id = BATCH_LISTEN_ID,
             topics = {"${alpha.spring.kafka.topic}"},
             containerFactory = "batchKafkaListenerContainerFactory",
             groupId = "${alpha.spring.kafka.consumer.group-id}",
-            properties = {"max.poll.interval.ms:60000", "max.poll.records=50", "auto.offset.reset=latest"})
+            properties = {"max.poll.interval.ms:300000", "max.poll.records=50", "auto.offset.reset=latest"})
     public void batchListen(List<ConsumerRecord<String, String>> records, Acknowledgment acknowledgment) {
         MessageListenerContainer listenerContainer = registry.getListenerContainer(BATCH_LISTEN_ID);
 
