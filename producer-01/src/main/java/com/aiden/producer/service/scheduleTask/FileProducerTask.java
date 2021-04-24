@@ -36,7 +36,7 @@ public class FileProducerTask {
     @Value("${alpha.spring.kafka.topic}")
     private String topic;
 
-    // 每10秒执行一次该方法 生产消息
+    // 每1秒执行一次该方法 生产消息
     @Scheduled(cron = "0/1 * * * * ?")
     public void scheduleMessage() {
         MessageData messageData = MessageData.builder()
@@ -79,17 +79,13 @@ public class FileProducerTask {
                     messageData.setTopic(topic);
                     messageData.setMsgPartition(partition);
                     messageData.setMsgOffset(offset);
-                    // 更新发送消息的次数
-                    int msgTimes = messageService.getById(messageData.getMsgId()).getMsgTimes();
-                    messageData.setMsgTimes(msgTimes);
+
                     messageService.updateById(messageData);
                 }, (throwable) -> {
                     // 如果这条消息发送失败, 那么更新数据库中该条消息状态为fail
                     messageData.setMsgStatus(MsgStatus.FAIL);
                     messageData.setExceptionMsg(throwable.getMessage());
-                    // 更新发送消息的次数
-                    int msgTimes = messageService.getById(messageData.getMsgId()).getMsgTimes();
-                    messageData.setMsgTimes(msgTimes);
+
                     messageService.updateById(messageData);
                 });
     }

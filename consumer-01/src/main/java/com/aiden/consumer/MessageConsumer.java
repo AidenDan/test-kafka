@@ -33,8 +33,8 @@ import java.util.concurrent.ExecutorService;
 @Component
 public class MessageConsumer {
     private static final String BATCH_LISTEN_ID = "batch-listen-id";
-    private MessageMapper messageMapper;
-    private KafkaListenerEndpointRegistry registry;
+    private final MessageMapper messageMapper;
+    private final KafkaListenerEndpointRegistry registry;
 
     @Autowired
     public MessageConsumer(MessageMapper messageMapper, KafkaListenerEndpointRegistry registry) {
@@ -64,7 +64,7 @@ public class MessageConsumer {
         records.forEach(record -> {
             threadPool.submit(() -> {
                         try {
-                            Thread.sleep(3000);
+                            Thread.sleep(6000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
