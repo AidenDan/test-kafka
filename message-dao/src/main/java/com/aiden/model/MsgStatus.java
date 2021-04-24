@@ -1,4 +1,4 @@
-package com.aiden.producer.model;
+package com.aiden.model;
 
 /**
  * @author Aiden

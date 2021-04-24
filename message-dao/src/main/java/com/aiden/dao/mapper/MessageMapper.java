@@ -1,6 +1,6 @@
-package com.aiden.producer.dao.mapper;
+package com.aiden.dao.mapper;
 
-import com.aiden.producer.model.MessageData;
+import com.aiden.model.MessageData;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

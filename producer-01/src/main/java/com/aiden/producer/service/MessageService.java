@@ -1,6 +1,6 @@
 package com.aiden.producer.service;
 
-import com.aiden.producer.model.MessageData;
+import com.aiden.model.MessageData;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

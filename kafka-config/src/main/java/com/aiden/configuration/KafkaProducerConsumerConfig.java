@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -24,8 +25,8 @@ import org.springframework.kafka.listener.ContainerProperties;
 public class KafkaProducerConsumerConfig {
 
     @Autowired
-    @Qualifier("kafkaProperties")
-    public KafkaProperties kafkaProperties;
+    @Qualifier("alphaKafkaProperties")
+    public KafkaProperties alphaKafkaProperties;
 
     // 生产者配置
     @Bean("kafkaTemplate")
@@ -34,7 +35,7 @@ public class KafkaProducerConsumerConfig {
     }
 
     public ProducerFactory<String, String> producerFactory(){
-        return new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties());
+        return new DefaultKafkaProducerFactory<>(alphaKafkaProperties.buildProducerProperties());
     }
 
     // 单条消息消费者配置
@@ -55,12 +56,13 @@ public class KafkaProducerConsumerConfig {
         containerFactory.setConsumerFactory(consumerFactory());
         containerFactory.getContainerProperties().setPollTimeout(3000);
         containerFactory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        containerFactory.setConcurrency(2);
+        // 表示开启2个客户端监听消费消息
+        containerFactory.setConcurrency(1);
         containerFactory.setBatchListener(true);
         return containerFactory;
     }
 
     public ConsumerFactory<String, String> consumerFactory(){
-        return new DefaultKafkaConsumerFactory<>(kafkaProperties.buildConsumerProperties());
+        return new DefaultKafkaConsumerFactory<>(alphaKafkaProperties.buildConsumerProperties());
     }
 }

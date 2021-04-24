@@ -28,18 +28,18 @@ import java.util.HashMap;
 public class KafkaServerConfig {
 
     @Primary
-    @Bean("kafkaProperties")
-    @ConfigurationProperties("spring.kafka")
+    @Bean("alphaKafkaProperties")
+    @ConfigurationProperties("alpha.spring.kafka")
     public KafkaProperties kafkaProperties() {
         return new KafkaProperties();
     }
 
-    @Value("${spring.kafka.topic}")
+    @Value("${alpha.spring.kafka.topic}")
     private String topics;
 
     /**
      * 创建topic
-     * topic中创建5个分区 确保每一个分区对应一个消费者 每个分区3个副本
+     * topic中创建2个分区 确保每一个分区对应一个消费者 每个分区1个副本
      *
      * @return topic
      */

@@ -1,4 +1,4 @@
-package com.aiden.producer.model;
+package com.aiden.model;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -31,9 +31,9 @@ public class MessageData {
     // 消息的状态
     private MsgStatus msgStatus;
     // 消息发送成功时在分区中的offset
-    private Long offset;
+    private Long msgOffset;
     // 消息发送成功时所在的分区
-    private Integer partition;
+    private Integer msgPartition;
     // 消息发送成功时所发送的主题
     private String topic;
     // 发送失败时的异常信息

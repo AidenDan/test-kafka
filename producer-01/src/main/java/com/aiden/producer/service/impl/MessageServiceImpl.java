@@ -1,7 +1,7 @@
 package com.aiden.producer.service.impl;
 
-import com.aiden.producer.dao.mapper.MessageMapper;
-import com.aiden.producer.model.MessageData;
+import com.aiden.dao.mapper.MessageMapper;
+import com.aiden.model.MessageData;
 import com.aiden.producer.service.MessageService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;

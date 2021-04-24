@@ -5,13 +5,8 @@
     <modules>
         <module>kafka-config</module>
         <module>producer-01</module>
-        <module>producer-02</module>
-        <module>producer-03</module>
         <module>consumer-01</module>
-        <module>consumer-02</module>
-        <module>consumer-03</module>
-        <module>consumer-04</module>
-        <module>consumer-05</module>
+        <module>message-dao</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

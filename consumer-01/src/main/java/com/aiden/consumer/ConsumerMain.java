@@ -1,26 +1,22 @@
-package com.aiden.producer;
+package com.aiden.consumer;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author Aiden
  * @version 1.0
  * @description
- * @date 2021-4-16 21:22:51
+ * @date 2021-4-24 11:34:15
  */
 
-@EnableScheduling
-@SpringBootApplication
+@PropertySource(value = {"classpath:consumer-${spring.profiles.active}.properties"})
 @ComponentScan(basePackages = {"com.aiden"})
-@PropertySource(value = {"classpath:producer-${spring.profiles.active}.properties"})
-public class ProducerMain {
-
+@SpringBootApplication
+public class ConsumerMain {
     public static void main(String[] args) {
-        SpringApplication.run(ProducerMain.class);
+        SpringApplication.run(ConsumerMain.class);
     }
 }
