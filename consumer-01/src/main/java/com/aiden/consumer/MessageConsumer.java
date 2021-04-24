@@ -42,6 +42,7 @@ public class MessageConsumer {
         this.registry = registry;
     }
 
+    // 60s内必须轮询一次消息, 否则kafka会认为此消费者宕机, 将其分区分给其他消费者
     @KafkaListener(id = BATCH_LISTEN_ID,
             topics = {"${alpha.spring.kafka.topic}"},
             containerFactory = "batchKafkaListenerContainerFactory",
@@ -49,15 +50,10 @@ public class MessageConsumer {
             properties = {"max.poll.interval.ms:60000", "max.poll.records=50", "auto.offset.reset=latest"})
     public void batchListen(List<ConsumerRecord<String, String>> records, Acknowledgment acknowledgment) {
         MessageListenerContainer listenerContainer = registry.getListenerContainer(BATCH_LISTEN_ID);
+
+        // 轮询一次消息后就暂停轮询, 等待所有的消息消费完毕再去轮询新的一批消息
+        listenerContainer.pause();
         log.info("messageSize:{}", records.size());
-        while (true) {
-            if (records.size() == 0) {
-                listenerContainer.pause();
-            } else {
-                listenerContainer.resume();
-                break;
-            }
-        }
         // 什么时候手动提交ack
         // 并发消费量=客户端数*开启的线程数
         CountDownLatch countDownLatch = new CountDownLatch(records.size());
@@ -98,8 +94,10 @@ public class MessageConsumer {
             log.error("countDownLatch exception:{}", e.getMessage());
         }
 
-        // 手动提交消息ack
+        // 手动提交一批消息ack
         acknowledgment.acknowledge();
-        log.info("finish commit ack mannual");
+        // 所有的消息都已经消费完毕了, 重新开始消费消息
+        listenerContainer.resume();
+        log.info("finish commit ack manual");
     }
 }
